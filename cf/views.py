@@ -221,7 +221,6 @@ def action(request):
             mail = find_between(html, 'var displayEmail = "','";')
        
             #harcode mail to test  
-            #mail = "raul.alluti@gmail.com"
            
             email = EmailMessage('Craigslist post '+link, 'Hello,\nWrite down plain text email\n\n\n\n\nRegards,\nYourName' , to=[mail])
             email.send()
