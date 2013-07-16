@@ -1,0 +1,100 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+<script>
+
+    var csrftoken = getCookie('csrftoken');
+
+	function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+	}
+
+	function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+	}
+	$.ajaxSetup({
+    	crossDomain: false, // obviates need for sameOrigin test
+	    	beforeSend: function(xhr, settings) {
+        	if (!csrfSafeMethod(settings.type)) {
+	            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+    	    }
+    	}
+	});
+
+   function setLink(link,action)
+   {
+      //formName is the name of your form
+      document.jobform.targetLink.value = link;
+      document.jobform.targetAction.value = action;
+
+      var dataString = 'targetLink='+ link + '&targetAction=' + action;
+
+      $.ajax({  
+  		type: "POST",  
+  		url: "/action/",  
+  		data: dataString,  
+  		success: function() { 
+  			console.log("form submitted");
+           $(document.getElementById(link)).remove();
+    	}  
+  		});  
+	   return false;
+   }
+
+	function popitup(url) {
+		newwindow=window.open(url,'job details','height=400,width=600');
+		if (window.focus) {newwindow.focus()}
+		return false;
+	}
+</script>
+<h3>Job Feeds</h3>
+<table>
+	<tr>
+		<td>
+			<b>Date</b>
+		</td>
+		<td>
+			<b>Location</b>
+		</td>
+		<td>
+			<b>Title</b>
+		</td>
+		<td>
+			<b>Summary</b>
+		</td>
+		<td>
+			<b>Actions</b>
+		</td>
+	</tr>
+	<form method="post" name="jobform" action="/action/">{% csrf_token %}
+		<input type="hidden" name="targetLink">
+        <input type="hidden" name="targetAction">
+
+		{% for job in jobs %}
+			<tr id = "{{ job.4 }}">
+				<td>{% if job.5 == 'B' %}<b>{% endif %} {{ job.0 }} {% if job.5 == 'B' %}</b>{% endif %}</td>
+				<td>{% if job.5 == 'B' %}<b>{% endif %} {{ job.1 }} {% if job.5 == 'B' %}</b>{% endif %}</td>
+				<td>{% if job.5 == 'B' %}<b>{% endif %} {{ job.2 }} {% if job.5 == 'B' %}</b>{% endif %}</td>
+				<td>{% if job.5 == 'B' %}<b>{% endif %} {{ job.3 }} {% if job.5 == 'B' %}</b>{% endif %}</td>
+				<td style="white-space: nowrap;">
+					<a href="popupex.html" onclick="return popitup('{{ job.4 }}')">open</a>
+					<input type="button" value="Delete" onclick="setLink('{{ job.4 }}','delete')"/>
+					<input type="button" value="Mail" onclick="setLink('{{ job.4 }}','mail')"/>
+				</td>
+			</tr>        	
+		{% endfor %}
+	</form>
+</table>
+
+
